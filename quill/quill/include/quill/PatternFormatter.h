@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "quill/bundled/fmt/format.h"
+#include "quill/Fmt.h"
 #include "quill/bundled/invoke/invoke.h"
 #include "quill/detail/misc/Attributes.h"
 #include "quill/detail/misc/Common.h"
@@ -159,22 +159,26 @@ public:
   PatternFormatter()
   {
     // Set the default pattern
-    _set_pattern(QUILL_STRING(
-      "%(ascii_time) [%(thread)] %(filename):%(lineno) %(level_name) %(logger_name) - %(message)"));
+    _set_pattern(
+      QUILL_STRING("%(ascii_time) [%(thread)] %(filename):%(lineno) LOG_%(level_name) "
+                   "%(logger_name) - %(message)"));
   }
 
   /**
    * Constructor for a PatterFormater with a custom format
    * @tparam TConstantString
-   * @param format_pattern format_pattern a format string. Must be passed using the macro QUIL_STRING("format string");
+   * @param format_pattern format_pattern a format string. Must be passed using the macro QUILL_STRING("format string");
+   * @param date_format The for format of the date. Same as strftime() format.
+   * @param timezone The timezone of the timestamp
    */
   template <typename TConstantString>
-  PatternFormatter(TConstantString format_pattern, std::string date_format, TimestampPrecision timestamp_precision)
+  PatternFormatter(TConstantString format_pattern, std::string date_format, TimestampPrecision timestamp_precision, Timezone timezone)
   {
     _set_pattern(format_pattern);
 
     _date_format = std::move(date_format);
     _timestamp_precision = timestamp_precision;
+    _timezone_type = timezone;
   }
 
   /**
@@ -315,7 +319,7 @@ private:
    * %(thread)        - Thread ID
    *
    * @tparam TConstantString
-   * @param format_pattern a format string. Must be passed using the macro QUIL_STRING("format string");
+   * @param format_pattern a format string. Must be passed using the macro QUILL_STRING("format string");
    */
   template <typename TConstantString>
   void _set_pattern(TConstantString);
@@ -386,8 +390,8 @@ private:
   mutable fmt::wmemory_buffer _w_memory_buffer;
 #endif
 
-  std::string _date_format{"%H:%M:%S"};       /** Timestamp format **/
-  Timezone _timezone_type{Timezone::GmtTime}; /** Timezone, GMT time by default **/
+  std::string _date_format{"%H:%M:%S"};         /** Timestamp format **/
+  Timezone _timezone_type{Timezone::LocalTime}; /** Timezone, GMT time by default **/
   TimestampPrecision _timestamp_precision{TimestampPrecision::NanoSeconds}; /** timestamp precision */
 };
 

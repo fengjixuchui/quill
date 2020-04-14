@@ -6,13 +6,16 @@
 #include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
+#include <sys/stat.h>
 #include <system_error>
 
 #if defined(_WIN32)
   #define WIN32_LEAN_AND_MEAN
   #define NOMINMAX
   #include <malloc.h>
+  #include <io.h>
   #include <windows.h>
+  #include <share.h>
 
   #include <processthreadsapi.h>
 #elif defined(__APPLE__)
@@ -20,6 +23,7 @@
   #include <mach/thread_policy.h>
   #include <pthread.h>
   #include <sys/mman.h>
+  #include <sys/stat.h>
   #include <sys/sysctl.h>
   #include <sys/types.h>
   #include <unistd.h>
@@ -131,7 +135,10 @@ void set_cpu_affinity(uint16_t cpu_id)
 /***/
 void set_thread_name(char const* name)
 {
-#if defined(_WIN32)
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // Disabled on MINGW.
+  (void)name;
+#elif defined(_WIN32)
   std::wstring name_ws = s2ws(name);
   // Set the thread name
   HRESULT hr = SetThreadDescription(GetCurrentThread(), name_ws.data());
@@ -246,6 +253,37 @@ FILE* fopen(filename_t const& filename, std::string const& mode)
   return fp;
 }
 
+/***/
+size_t fsize(FILE* file)
+{
+  if (!file)
+  {
+    throw std::runtime_error("Can not get the file size. file is nullptr");
+  }
+
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  auto const fd = ::_fileno(file);
+  auto const ret = ::_filelength(fd);
+
+  if (ret >= 0)
+  {
+    return static_cast<size_t>(ret);
+  }
+#else
+  auto const fd = fileno(file);
+  struct stat st;
+
+  if (fstat(fd, &st) == 0)
+  {
+    return static_cast<size_t>(st.st_size);
+  }
+#endif
+
+  // failed to get the file size
+  throw std::system_error(errno, std::system_category());
+}
+
+/***/
 int remove(filename_t const& filename) noexcept
 {
 #if defined(_WIN32)
@@ -261,7 +299,7 @@ void wstring_to_utf8(fmt::wmemory_buffer const& w_mem_buffer, fmt::memory_buffer
 {
   auto bytes_needed = static_cast<int32_t>(mem_buffer.capacity() - mem_buffer.size());
 
-  if ((w_mem_buffer.size() + 1) * 2 > bytes_needed)
+  if ((w_mem_buffer.size() + 1) * 2 > static_cast< size_t >(bytes_needed))
   {
     // if our given string is larger than the capacity, calculate how many bytes we need
     bytes_needed = ::WideCharToMultiByte(
@@ -280,7 +318,6 @@ void wstring_to_utf8(fmt::wmemory_buffer const& w_mem_buffer, fmt::memory_buffer
 
   if (QUILL_UNLIKELY(bytes_needed == 0))
   {
-    auto const s = GetLastError();
     throw std::system_error(std::error_code(GetLastError(), std::system_category()));
   }
 

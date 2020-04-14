@@ -31,16 +31,49 @@ Handler* stderr_handler()
 }
 
 /***/
-Handler* file_handler(filename_t const& filename, std::string const& mode /* = std::string{} */)
+Handler* file_handler(filename_t const& filename,
+                      std::string const& mode, /* = std::string{} */
+                      FilenameAppend append_to_filename /* = FilenameAppend::None */)
 {
-  return detail::LogManagerSingleton::instance().log_manager().handler_collection().file_handler(filename, mode);
+  return detail::LogManagerSingleton::instance().log_manager().handler_collection().file_handler(
+    filename, mode, append_to_filename);
 }
 
 /***/
-#if defined(_WIN32)
-Handler* file_handler(std::string const& filename, std::string const& mode /* = std::string{} */)
+Handler* daily_file_handler(filename_t const& base_filename, std::chrono::hours rotation_hour, std::chrono::minutes rotation_minute)
 {
-  return file_handler(detail::s2ws(filename), mode);
+  return detail::LogManagerSingleton::instance().log_manager().handler_collection().daily_file_handler(
+    base_filename, rotation_hour, rotation_minute);
+}
+
+/***/
+Handler* rotating_file_handler(filename_t const& base_filename, size_t max_bytes)
+{
+  return detail::LogManagerSingleton::instance().log_manager().handler_collection().rotating_file_handler(
+    base_filename, max_bytes);
+}
+
+#if defined(_WIN32)
+/***/
+Handler* file_handler(std::string const& filename,
+                      std::string const& mode /* = std::string{} */,
+                      FilenameAppend append_to_filename /* = FilenameAppend::None */)
+{
+  return file_handler(detail::s2ws(filename), mode, append_to_filename);
+}
+
+/***/
+Handler* daily_file_handler(std::string const& base_filename,
+                            std::chrono::hours rotation_hour,
+                            std::chrono::minutes rotation_minute)
+{
+  return daily_file_handler(detail::s2ws(base_filename), rotation_hour, rotation_minute);
+}
+
+/***/
+Handler* rotating_file_handler(std::string const& base_filename, size_t max_bytes)
+{
+  return rotating_file_handler(detail::s2ws(base_filename), max_bytes);
 }
 #endif
 

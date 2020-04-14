@@ -16,6 +16,8 @@ option(QUILL_CODE_COVERAGE "Enable code coverage" OFF)
 
 option(QUILL_USE_VALGRIND "Use valgrind as the default memcheck tool in CTest (Requires Valgrind)" OFF)
 
+option(QUILL_FMT_EXTERNAL "Use external fmt library instead of bundled" OFF)
+
 #-------------------------------------------------------------------------------------------------------
 # Use newer policies if possible, up to most recent tested version of CMake.
 #-------------------------------------------------------------------------------------------------------
@@ -61,13 +63,6 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif ()
 
-#---------------------------------------------------------------------------------------
-# Always verbose make file
-#---------------------------------------------------------------------------------------
-if (QUILL_MASTER_PROJECT)
-    set(CMAKE_VERBOSE_MAKEFILE TRUE CACHE BOOL "Verbose output" FORCE)
-endif ()
-
 #-------------------------------------------------------------------------------------------------------
 # Required Packages
 #-------------------------------------------------------------------------------------------------------
@@ -97,8 +92,17 @@ endif ()
 # Log Info
 #-------------------------------------------------------------------------------------------------------
 if (QUILL_MASTER_PROJECT)
+    option(QUILL_VERBOSE_MAKEFILE "Verbose make output" OFF)
+
     message(STATUS "Build Type: " ${CMAKE_BUILD_TYPE})
     message(STATUS "Quill Version: ${QUILL_VERSION}")
+endif ()
+
+#---------------------------------------------------------------------------------------
+# Verbose make file option
+#---------------------------------------------------------------------------------------
+if (QUILL_VERBOSE_MAKEFILE)
+    set(CMAKE_VERBOSE_MAKEFILE TRUE CACHE BOOL "Verbose output" FORCE)
 endif ()
 
 #-------------------------------------------------------------------------------------------------------

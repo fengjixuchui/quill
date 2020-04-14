@@ -1,5 +1,7 @@
 #include "quill/detail/HandlerCollection.h"
+#include "quill/handlers/DailyFileHandler.h"
 #include "quill/handlers/FileHandler.h"
+#include "quill/handlers/RotatingFileHandler.h"
 
 namespace quill
 {
@@ -26,7 +28,9 @@ StreamHandler* HandlerCollection::stderr_streamhandler()
 }
 
 /***/
-StreamHandler* HandlerCollection::file_handler(filename_t const& filename, std::string const& mode /* = std::string{"a"} */)
+StreamHandler* HandlerCollection::file_handler(filename_t const& filename,
+                                               std::string const& mode /* = std::string{"a"} */,
+                                               FilenameAppend append_to_filename /* = FilenameAppend::None */)
 {
   // Protect shared access
   std::lock_guard<Spinlock> const lock{_spinlock};
@@ -42,7 +46,53 @@ StreamHandler* HandlerCollection::file_handler(filename_t const& filename, std::
 
   // if first time add it
   auto emplace_result = _file_handler_collection.emplace(
-    filename, std::make_unique<FileHandler>(filename.data(), mode.data()));
+    filename, std::make_unique<FileHandler>(filename.data(), mode.data(), append_to_filename));
+
+  return (*emplace_result.first).second.get();
+}
+
+/***/
+StreamHandler* HandlerCollection::daily_file_handler(filename_t const& base_filename,
+                                                     std::chrono::hours rotation_hour,
+                                                     std::chrono::minutes rotation_minute)
+{
+  // Protect shared access
+  std::lock_guard<Spinlock> const lock{_spinlock};
+
+  // Try to insert it unless we failed it means we already had it
+  auto const search = _file_handler_collection.find(base_filename);
+
+  // First search if we have it and don't call make_unique yet as this will call fopen
+  if (search != _file_handler_collection.cend())
+  {
+    return (*search).second.get();
+  }
+
+  // if first time add it
+  auto emplace_result = _file_handler_collection.emplace(
+    base_filename, std::make_unique<DailyFileHandler>(base_filename.data(), rotation_hour, rotation_minute));
+
+  return (*emplace_result.first).second.get();
+}
+
+/***/
+StreamHandler* HandlerCollection::rotating_file_handler(filename_t const& base_filename, size_t max_file_size)
+{
+  // Protect shared access
+  std::lock_guard<Spinlock> const lock{_spinlock};
+
+  // Try to insert it unless we failed it means we already had it
+  auto const search = _file_handler_collection.find(base_filename);
+
+  // First search if we have it and don't call make_unique yet as this will call fopen
+  if (search != _file_handler_collection.cend())
+  {
+    return (*search).second.get();
+  }
+
+  // if first time add it
+  auto emplace_result = _file_handler_collection.emplace(
+    base_filename, std::make_unique<RotatingFileHandler>(base_filename.data(), max_file_size));
 
   return (*emplace_result.first).second.get();
 }

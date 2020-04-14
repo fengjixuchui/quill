@@ -6,7 +6,7 @@
 #pragma once
 
 #include "quill/PatternFormatter.h"
-#include "quill/bundled/fmt/format.h"
+#include "quill/Fmt.h"
 
 namespace quill
 {
@@ -33,15 +33,20 @@ public:
 
   /**
    * Set a custom formatter for this handler
-   * @param formatter
+   * @tparam TConstantString
+   * @param format_pattern
+   * @param date_format defaults to "%H:%M:%S"
+   * @param timestamp_precision defaults to PatternFormatter::TimestampPrecision::NanoSeconds
+   * @param timezone defaults to PatternFormatter::Timezone::LocalTime
    */
   template <typename TConstantString>
-  QUILL_ATTRIBUTE_COLD void set_pattern(TConstantString format_pattern,
-                                        std::string date_format = std::string{"%H:%M:%S"},
-                                        PatternFormatter::TimestampPrecision timestamp_precision =
-                                          PatternFormatter::TimestampPrecision::NanoSeconds)
+  QUILL_ATTRIBUTE_COLD void set_pattern(
+    TConstantString format_pattern,
+    std::string date_format = std::string{"%H:%M:%S"},
+    PatternFormatter::TimestampPrecision timestamp_precision = PatternFormatter::TimestampPrecision::NanoSeconds,
+    PatternFormatter::Timezone timezone = PatternFormatter::Timezone::LocalTime)
   {
-    _formatter = std::make_unique<PatternFormatter>(format_pattern, date_format, timestamp_precision);
+    _formatter = std::make_unique<PatternFormatter>(format_pattern, date_format, timestamp_precision, timezone);
   }
 
   /**
@@ -49,14 +54,15 @@ public:
    * @note: Accessor for backend processing
    * @return
    */
-  PatternFormatter const& formatter() { return *(_formatter.get()); }
+  QUILL_ATTRIBUTE_HOT PatternFormatter const& formatter() { return *(_formatter.get()); }
 
   /**
    * Logs a formatted log record to the handler
    * @note: Accessor for backend processing
    * @param formatted_log_record
    */
-  virtual void emit(fmt::memory_buffer const& formatted_log_record) = 0;
+  QUILL_ATTRIBUTE_HOT virtual void write(fmt::memory_buffer const& formatted_log_record,
+                                        std::chrono::nanoseconds log_record_timestamp) = 0;
 
   /**
    * Flush the handler synchronising the associated handler with its controlled output sequence.

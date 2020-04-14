@@ -41,12 +41,36 @@ QUILL_NODISCARD QUILL_ATTRIBUTE_COLD Handler* stderr_handler();
  * Creates or returns an existing handler to a file.
  * If the file is already opened the existing handler for this file is returned instead
  * @param filename the name of the file
+ * @param append_to_filename additional info to append to the name of the file. FilenameAppend::None or FilenameAppend::Date
  * @param mode Used only when the file is opened for the first time. Otherwise the value is ignored
  * If no value is specified during the file creation "a" is used as default.
  * @return A handler to a file
  */
 QUILL_NODISCARD QUILL_ATTRIBUTE_COLD Handler* file_handler(filename_t const& filename,
-                                                           std::string const& mode = std::string{});
+                                                           std::string const& mode = std::string{},
+                                                           FilenameAppend append_to_filename = FilenameAppend::None);
+
+/**
+ * Creates or returns an existing handler to a daily file handler
+ * The handler will rotate creating a new log file after 24 hours based on the given rotation_hour and rotation_minute
+ * @param base_filename the base filename, current date is automatically appended to this
+ * @param rotation_hour The hour to perform the rotation
+ * @param rotation_minute The minute to perform the rotation
+ * @return A handler to a daily file
+ */
+QUILL_NODISCARD QUILL_ATTRIBUTE_COLD Handler* daily_file_handler(filename_t const& base_filename,
+                                                                 std::chrono::hours rotation_hour,
+                                                                 std::chrono::minutes rotation_minute);
+
+/**
+ * Creates or returns an existing handler to a rotating file handler
+ * The handler will rotate creating a new log file after the file has reached max_bytes
+ * @param base_filename Base file name
+ * @param max_bytes Maximum file size in bytes
+ * @return A handler to a rotating log file
+ */
+QUILL_NODISCARD QUILL_ATTRIBUTE_COLD Handler* rotating_file_handler(filename_t const& base_filename,
+                                                                    size_t max_bytes);
 
 #if defined(_WIN32)
 /**
@@ -56,7 +80,15 @@ QUILL_NODISCARD QUILL_ATTRIBUTE_COLD Handler* file_handler(filename_t const& fil
  * @param mode Used only when the file is opened for the first time. Otherwise the value is ignored
  */
 QUILL_NODISCARD QUILL_ATTRIBUTE_COLD Handler* file_handler(std::string const& filename,
-                                                           std::string const& mode = std::string{});
+                                                           std::string const& mode = std::string{},
+                                                           FilenameAppend append_to_filename = FilenameAppend::None);
+
+QUILL_NODISCARD QUILL_ATTRIBUTE_COLD Handler* daily_file_handler(std::string const& base_filename,
+                                                                 std::chrono::hours rotation_hour,
+                                                                 std::chrono::minutes rotation_minute);
+
+QUILL_NODISCARD QUILL_ATTRIBUTE_COLD Handler* rotating_file_handler(std::string const& base_filename,
+                                                                    size_t max_bytes);
 #endif
 
 /**
@@ -140,9 +172,9 @@ QUILL_ATTRIBUTE_COLD void set_default_logger_handler(Handler* handler);
 QUILL_ATTRIBUTE_COLD void set_default_logger_handler(std::initializer_list<Handler*> handlers);
 
 /**
- * Blocks the caller thread until all log messages until the current timestamp are flushed
+ * Blocks the caller thread until all log messages up to the current timestamp are flushed
  *
- * The backend thread will emit all loggers and all handlers up to the point (timestamp) that
+ * The backend thread will call write on all handlers for all loggers up to the point (timestamp) that
  * this function was called.
  *
  * @note This function will not do anything if called while the backend worker is not running
