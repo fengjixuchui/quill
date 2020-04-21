@@ -125,9 +125,9 @@ Quill requires a C++14 compiler. Minimum required versions of supported compiler
 
 ### Package Managers
 
-* Homebrew: `brew install quill`
-* vcpkg: `vcpkg install quill`
-* conan: `quill/[>=1.2.1]`
+* Homebrew: `brew install quill`.
+* vcpkg: `vcpkg install quill` for bundled fmt or `vcpkg install quill[fmt]` for external fmt.
+* conan: `quill/[>=1.2.1]`. Options: `fmt_external`.
 
 ### CMake
 
