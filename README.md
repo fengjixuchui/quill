@@ -123,6 +123,12 @@ Quill requires a C++14 compiler. Minimum required versions of supported compiler
 
 ## Integration
 
+### Package Managers
+
+* Homebrew: `brew install quill`
+* vcpkg: `vcpkg install quill`
+* conan: `quill/[>=1.2.1]`
+
 ### CMake
 
 #### External
@@ -133,6 +139,12 @@ git clone https://github.com/odygrd/quill.git
 mkdir cmake_build
 cd cmake_build
 make install
+```
+
+Note: To install in custom directory invoke cmake with `-DCMAKE_INSTALL_PREFIX=/quill/install-dir/`
+##### Building and Installing Quill as Static Library With External `libfmt`
+```
+cmake -DCMAKE_PREFIX_PATH=/my/fmt/fmt-config.cmake-directory/ -DQUILL_FMT_EXTERNAL=ON -DCMAKE_INSTALL_PREFIX=/quill/install-dir/'
 ```
 
 Then use the library from a CMake project, you can locate it directly with `find_package()`
@@ -185,10 +197,6 @@ target_link_libraries(my_project PRIVATE quill::quill)
 ##### main.cpp
 See [basic usage](#basic-usage)
 
-### Package Managers
-
-**TODO**
-
 ## Basic usage
 
 ```c++
@@ -238,6 +246,8 @@ By default Quill outputs to stdout using the default formatting pattern:
 
 ## Documentation
 Advanced usage and additional documentation can be found in the [wiki](https://github.com/odygrd/quill/wiki) pages.
+
+The [examples](https://github.com/odygrd/quill/tree/master/examples) folder is also a good source of documentation.
 
 ## License
 Quill is licensed under the [MIT License](http://opensource.org/licenses/MIT)
