@@ -24,6 +24,16 @@ matrix:
           sources: ['ubuntu-toolchain-r-test']
           packages: [g++-9, valgrind, cmake, cmake-data, ninja-build]
 
+    - name: 'Linux Gcc C++17 Release ARM64'
+      os: linux
+      arch: arm64
+      compiler: gcc
+      env: GCC_VERSION=9 BUILD=Release STANDARD=17 CODE_COVERAGE=OFF VALGRIND=OFF ASAN=OFF TSAN=OFF
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: [g++-9, cmake, cmake-data, ninja-build]
+
     - name: 'Linux Gcc C++14 Debug'
       os: linux
       compiler: gcc
