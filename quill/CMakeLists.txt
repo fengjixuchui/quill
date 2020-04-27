@@ -23,6 +23,7 @@ set(HEADER_FILES
         include/quill/detail/misc/Spinlock.h
         include/quill/detail/misc/Utilities.h
         include/quill/detail/misc/TypeTraits.h
+        include/quill/detail/misc/TypeTraitsCopyable.h
         include/quill/detail/record/CommandRecord.h
         include/quill/detail/record/LogRecord.h
         include/quill/detail/record/RecordBase.h
@@ -50,6 +51,7 @@ set(HEADER_FILES
         include/quill/LogLevel.h
         include/quill/PatternFormatter.h
         include/quill/Quill.h
+        include/quill/QuillError.h
         include/quill/TweakMe.h
         include/quill/Utility.h
         include/quill/Version.h
@@ -105,6 +107,12 @@ endif ()
 add_library(${TARGET_NAME} STATIC "")
 
 add_library(${TARGET_NAME}::${TARGET_NAME} ALIAS ${TARGET_NAME})
+
+if (QUILL_NO_EXCEPTIONS)
+    if (NOT MSVC)
+        target_compile_options(${TARGET_NAME} PRIVATE -fno-exceptions)
+    endif ()
+endif ()
 
 # Add target sources
 target_sources(${TARGET_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})
