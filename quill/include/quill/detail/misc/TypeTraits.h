@@ -5,10 +5,7 @@
 
 #pragma once
 
-#include <functional>
-#include <string>
-#include <tuple>
-#include <type_traits>
+#include "quill/detail/misc/TypeTraitsCopyable.h"
 
 namespace quill
 {
@@ -103,5 +100,27 @@ struct any_is_same<TSame, TFirst> : std::is_same<TSame, std::decay_t<TFirst>>
 {
 };
 
+/**
+ * For non class types e.g. ints we always want to default to true
+ */
+template <typename T, typename R = void>
+struct is_all_tuple_copy_constructible_helper : std::true_type
+{
+};
+
+/**
+ * Enable only for classes
+ */
+template <typename T>
+struct is_all_tuple_copy_constructible_helper<T, std::enable_if_t<std::is_class<T>::value>>
+  : std::is_copy_constructible<T>
+{
+};
+
+template <typename... TArgs>
+struct is_all_tuple_copy_constructible
+  : conjunction<is_all_tuple_copy_constructible_helper<remove_cvref_t<TArgs>>...>
+{
+};
 } // namespace detail
 } // namespace quill
