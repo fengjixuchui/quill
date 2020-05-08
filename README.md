@@ -17,7 +17,10 @@
     </a>
     <a href="https://www.codacy.com/manual/odygrd/quill?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=odygrd/quill&amp;utm_campaign=Badge_Grade">
       <img src="https://img.shields.io/codacy/grade/cd387bc34658475d98bff84db3ad5287?logo=codacy&style=flat-square" alt="codacy" />
-    </a>    
+    </a>
+  </div>
+ 
+  <div>
     <a href="http://opensource.org/licenses/MIT">
       <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" />
     </a>
@@ -25,10 +28,14 @@
       <img src="https://img.shields.io/badge/language-C%2B%2B14-red.svg?style=flat-square" alt="language" />
     </a>
   </div>
-
-  <p><h3>Asynchronous Low Latency Logging Library</h3></p>
-</div>
   
+  <p><b>Asynchronous Low Latency Logging Library</b></p>
+  
+</div>
+
+  
+<br>
+
 -  [Introduction](#introduction)
 -  [Features](#features)
 -  [Performance](#performance)
