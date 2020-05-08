@@ -34,9 +34,13 @@ class RecordBase
 {
 public:
   RecordBase() = default;
-  RecordBase(RecordBase const&) = delete;
-  RecordBase& operator=(RecordBase const&) = delete;
   virtual ~RecordBase() = default;
+
+  /**
+   * Virtual clone
+   * @return
+   */
+  virtual std::unique_ptr<RecordBase> clone() const = 0;
 
   /**
    * Get the stored rdtsc timestamp

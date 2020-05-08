@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "quill/detail/ThreadContext.h"
+#include "quill/detail/misc/FileUtilities.h"
 #include "quill/detail/misc/Os.h"
 
 namespace quill
@@ -56,18 +57,32 @@ void BackendWorker::stop() noexcept
 }
 
 /***/
-void BackendWorker::_exit()
+void BackendWorker::_check_dropped_messages(ThreadContextCollection::backend_thread_contexts_cache_t const& cached_thread_contexts) noexcept
 {
-  // load all contexts locally
-  ThreadContextCollection::backend_thread_contexts_cache_t const& cached_thread_contexts =
-    _thread_context_collection.backend_thread_contexts_cache();
+  // silence warning when bounded queue not used
+  (void)cached_thread_contexts;
 
-  while (_process_record(cached_thread_contexts))
+#if defined(QUILL_USE_BOUNDED_QUEUE)
+  for (ThreadContext* thread_context : cached_thread_contexts)
   {
-    // loop until there are no log records left
-  }
-}
+    size_t const dropped_messages_cnt = thread_context->get_and_reset_message_counter();
 
+    if (QUILL_UNLIKELY(dropped_messages_cnt > 0))
+    {
+      char ts[24];
+      time_t t = time(nullptr);
+      struct tm* p = localtime(&t);
+      strftime(ts, 24, "%X", p);
+
+      // Write to stderr that we dropped messages
+      std::string const msg = fmt::format("~ {} localtime dropped {} log messages from thread {}\n",
+                                          ts, dropped_messages_cnt, thread_context->thread_id());
+
+      detail::file_utilities::fwrite_fully(msg.data(), sizeof(char), msg.size(), stderr);
+    }
+  }
+#endif
+}
 
 } // namespace detail
 } // namespace quill

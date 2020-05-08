@@ -27,7 +27,7 @@ set(HEADER_FILES
         include/quill/detail/record/CommandRecord.h
         include/quill/detail/record/LogRecord.h
         include/quill/detail/record/RecordBase.h
-        include/quill/detail/record/StaticLogRecordInfo.h
+        include/quill/detail/record/LogRecordMetadata.h
         include/quill/detail/BackendWorker.h
         include/quill/detail/BoundedSPSCQueue.h
         include/quill/detail/Config.h
@@ -136,6 +136,11 @@ else ()
     # Add dependency to pkg-config
     set(PKG_CONFIG_REQUIRES fmt)
 endif ()
+
+if(MINGW)
+    # strftime requires this when using MinGw to correctly format the time ..
+    target_link_libraries(${TARGET_NAME} PUBLIC ucrtbase)
+endif()
 
 # Add include directories for this library
 target_include_directories(${TARGET_NAME}

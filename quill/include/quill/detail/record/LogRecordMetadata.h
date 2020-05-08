@@ -18,10 +18,13 @@ namespace detail
  * Captures and stores information about a logging event in compile time
  * This information is later passed to the LogRecord runtime class
  */
-class StaticLogRecordInfo
+class LogRecordMetadata
 {
 public:
-  constexpr StaticLogRecordInfo(const char* lineno, char const* pathname, char const* func, char const* message_format, LogLevel level)
+  constexpr LogRecordMetadata() = default;
+
+  constexpr LogRecordMetadata(const char* lineno, char const* pathname, char const* func,
+                              char const* message_format, LogLevel level)
     : _func(func),
       _pathname(pathname),
       _filename(_extract_source_file_name(_pathname)),
@@ -101,12 +104,12 @@ private:
   }
 
 private:
-  char const* _func;
-  char const* _pathname;
-  char const* _filename;
-  char const* _message_format;
-  char const* _lineno;
-  LogLevel _level;
+  char const* _func{nullptr};
+  char const* _pathname{nullptr};
+  char const* _filename{nullptr};
+  char const* _message_format{nullptr};
+  char const* _lineno{nullptr};
+  LogLevel _level{LogLevel::None};
 };
 
 } // namespace detail

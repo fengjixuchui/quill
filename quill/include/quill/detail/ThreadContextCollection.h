@@ -44,7 +44,7 @@ private:
      * Creates a new context and then registers it to the context collection sharing ownership
      * of the ThreadContext
      */
-    explicit ThreadContextWrapper(ThreadContextCollection& thread_context_collection, Config const& config);
+    explicit ThreadContextWrapper(ThreadContextCollection& thread_context_collection);
 
     /**
      * Destructor
@@ -102,7 +102,7 @@ public:
    */
   QUILL_NODISCARD_ALWAYS_INLINE_HOT ThreadContext* local_thread_context() noexcept
   {
-    static thread_local ThreadContextWrapper thread_context_wrapper{*this, _config};
+    static thread_local ThreadContextWrapper thread_context_wrapper{*this};
     return thread_context_wrapper.thread_context();
   }
 
@@ -121,6 +121,11 @@ public:
    * @return All current owned thread contexts
    */
   QUILL_NODISCARD QUILL_ATTRIBUTE_HOT backend_thread_contexts_cache_t const& backend_thread_contexts_cache();
+
+  /**
+   * Clears thread context cache from invalid and empty thread contexts
+   */
+  QUILL_ATTRIBUTE_HOT void clear_invalid_and_empty_thread_contexts();
 
 private:
   /**
@@ -195,7 +200,7 @@ private:
    * Incremented by any thread on thread local destruction, decremented by the backend thread
    */
   alignas(CACHELINE_SIZE) std::atomic<uint8_t> _invalid_thread_context{0};
-  char _pad0[detail::CACHELINE_SIZE - sizeof(std::atomic<uint8_t>)];
+  char _pad0[detail::CACHELINE_SIZE - sizeof(std::atomic<uint8_t>)] = "\0";
 };
 } // namespace detail
 } // namespace quill
