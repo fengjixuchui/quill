@@ -1,18 +1,14 @@
 #include "quill/detail/BackendWorker.h"
-
-#include <vector>
-
-#include "quill/detail/ThreadContext.h"
 #include "quill/detail/misc/FileUtilities.h"
-#include "quill/detail/misc/Os.h"
+#include <iostream> // for endl, basic_ostream, cerr, ostream
+#include <vector>   // for vector
 
 namespace quill
 {
 namespace detail
 {
 /***/
-BackendWorker::BackendWorker(Config const& config,
-                             ThreadContextCollection& thread_context_collection,
+BackendWorker::BackendWorker(Config const& config, ThreadContextCollection& thread_context_collection,
                              HandlerCollection const& handler_collection)
   : _config(config), _thread_context_collection(thread_context_collection), _handler_collection(handler_collection)
 {
@@ -71,8 +67,9 @@ void BackendWorker::_check_dropped_messages(ThreadContextCollection::backend_thr
     {
       char ts[24];
       time_t t = time(nullptr);
-      struct tm* p = localtime(&t);
-      strftime(ts, 24, "%X", p);
+      struct tm p;
+      quill::detail::localtime_rs(std::addressof(t), std::addressof(p));
+      strftime(ts, 24, "%X", std::addressof(p));
 
       // Write to stderr that we dropped messages
       std::string const msg = fmt::format("~ {} localtime dropped {} log messages from thread {}\n",
