@@ -40,6 +40,17 @@ QUILL_NODISCARD constexpr size_t strlength(char const* str)
 }
 
 /**
+ * Constexpr string comparison
+ * @param lhs string 1
+ * @param rhs string 2
+ * @return true if they are equal
+ */
+QUILL_NODISCARD constexpr bool strequal(char const* lhs, char const* rhs)
+{
+  return (*lhs && *rhs) ? (*lhs == *rhs && strequal(lhs + 1, rhs + 1)) : (!*lhs && !*rhs);
+}
+
+/**
  * Convert a string to wstring
  * @param str input string
  * @return the value of input string as wide string
@@ -78,7 +89,7 @@ void safe_strncpy(std::array<char, N>& destination, char const* source) noexcept
  * @return an aligned pointer for the given object
  */
 template <uint64_t alignment, typename T>
-QUILL_NODISCARD_ALWAYS_INLINE_HOT constexpr T* align_pointer(void* pointer) noexcept
+QUILL_NODISCARD QUILL_ATTRIBUTE_HOT constexpr T* align_pointer(void* pointer) noexcept
 {
   static_assert(is_pow_of_two(alignment), "alignment must be a power of two");
   return reinterpret_cast<T*>((reinterpret_cast<uintptr_t>(pointer) + (alignment - 1ul)) & ~(alignment - 1ul));
