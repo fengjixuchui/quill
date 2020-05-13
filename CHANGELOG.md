@@ -1,3 +1,4 @@
+-  [v1.3.1](#v1.3.1)
 -  [v1.3.0](#v1.3.0)
 -  [v1.2.3](#v1.2.3)
 -  [v1.2.2](#v1.2.2)
@@ -5,6 +6,9 @@
 -  [v1.2.0](#v1.2.0)
 -  [v1.1.0](#v1.1.0)
 -  [v1.0.0](#v1.0.0)
+
+## v1.3.1
+-  Minor CMake fixes when `QUILL_FMT_EXTERNAL` option is used.
 
 ## v1.3.0
 **New Features**
@@ -23,6 +27,9 @@
 -  `std::string_view` is now promoted to `std::string` to take a deep copy
 -  The queue capacity has been moved from `config` to `Tweakme.h`.
 -  Multiple formats patterns support for `stdout` and `stderr` handlers. See [example_stdout_multiple_formatters.cpp](https://github.com/odygrd/quill/blob/master/examples/example_custom_formatter.cpp)
+-  `quill::start()` will now block until the backend worker has started.
+-  Upgraded bundled libfmt to `6.2.1`
+
 ## v1.2.3
 -  CMake changes to support package installation in conan.
 

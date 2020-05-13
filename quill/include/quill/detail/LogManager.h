@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "quill/TweakMe.h"
+
 #include "quill/detail/BackendWorker.h"
 #include "quill/detail/Config.h"
 #include "quill/detail/HandlerCollection.h"
@@ -74,9 +76,10 @@ public:
    */
   void flush()
   {
-    if (!_backend_worker.is_running())
+    if ((!_backend_worker.is_running()) || (get_thread_id() == _backend_worker.thread_id()))
     {
-      // Backend worker needs to be running, otherwise we are stuck for ever waiting
+      // 1. Backend worker needs to be running, otherwise we are stuck for ever waiting
+      // 2. self-protection, backend_worker is not able to call this.
       return;
     }
 
@@ -112,7 +115,7 @@ public:
   }
 
   /**
-   * Starts the backend worker thread
+   * Starts the backend worker thread.
    */
   QUILL_ATTRIBUTE_COLD void inline start_backend_worker() { _backend_worker.run(); }
 
@@ -121,6 +124,7 @@ public:
    */
   QUILL_ATTRIBUTE_COLD void stop_backend_worker() { _backend_worker.stop(); }
 
+#if !defined(QUILL_NO_EXCEPTIONS)
   /**
    * Set error handler
    * @param backend_worker_error_handler backend_worker_error_handler_t error handler
@@ -130,6 +134,7 @@ public:
   {
     _backend_worker.set_error_handler(std::move(backend_worker_error_handler));
   }
+#endif
 
 private:
   Config _config;

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "quill/TweakMe.h"
+
 #include "quill/QuillError.h"                     // for QUILL_CATCH, QUILL...
 #include "quill/detail/BoundedSPSCQueue.h"        // for BoundedSPSCQueue<>...
 #include "quill/detail/Config.h"                  // for Config
@@ -14,7 +16,7 @@
 #include "quill/detail/misc/Attributes.h"         // for QUILL_ATTRIBUTE_HOT
 #include "quill/detail/misc/Common.h"             // for QUILL_RDTSC_RESYNC...
 #include "quill/detail/misc/Macros.h"             // for QUILL_LIKELY
-#include "quill/detail/misc/Os.h"                 // for set_cpu_affinity
+#include "quill/detail/misc/Os.h"                 // for set_cpu_affinity, get_thread_id
 #include "quill/detail/misc/RdtscClock.h"         // for RdtscClock
 #include "quill/detail/record/RecordBase.h"       // for RecordBase
 #include "quill/handlers/Handler.h"               // for Handler
@@ -67,12 +69,10 @@ public:
   QUILL_NODISCARD QUILL_ATTRIBUTE_HOT inline bool is_running() const noexcept;
 
   /**
-   * Set up a custom error handler that will be used if the backend thread has any error.
-   * If no error handler is set, the default one will print to std::cerr
-   * @param error_handler an error handler callback e.g [](std::string const& s) { std::cerr << s << std::endl; }
-   * @throws exception if it is called after the thread has started
+   * Get the backend worker's thread id
+   * @return the backend worker's thread id
    */
-  QUILL_ATTRIBUTE_COLD void set_error_handler(backend_worker_error_handler_t error_handler);
+  QUILL_NODISCARD uint32_t thread_id() const noexcept;
 
   /**
    * Starts the backend worker thread
@@ -84,6 +84,16 @@ public:
    * Stops the backend worker thread
    */
   QUILL_ATTRIBUTE_COLD void stop() noexcept;
+
+#if !defined(QUILL_NO_EXCEPTIONS)
+  /**
+   * Set up a custom error handler that will be used if the backend thread has any error.
+   * If no error handler is set, the default one will print to std::cerr
+   * @param error_handler an error handler callback e.g [](std::string const& s) { std::cerr << s << std::endl; }
+   * @throws exception if it is called after the thread has started
+   */
+  QUILL_ATTRIBUTE_COLD void set_error_handler(backend_worker_error_handler_t error_handler);
+#endif
 
 private:
   /**
@@ -105,7 +115,6 @@ private:
 
   /**
    * Checks for records in all queues and processes the one with the minimum timestamp
-   * @return true if one record was found and processed
    */
   QUILL_ATTRIBUTE_HOT inline void _process_record();
 
@@ -117,7 +126,7 @@ private:
   /**
    * Convert a log record timestamp to a time since epoch timestamp in nanoseconds.
    *
-   * @param log_record_handle The log record timestamp is just an uint64 and it can be either
+   * @param log_record The log record timestamp is just an uint64 and it can be either
    * rdtsc time or nanoseconds since epoch based on #if !defined(QUILL_CHRONO_CLOCK) definition
    * @return a timestamp in nanoseconds since epoch
    */
@@ -154,15 +163,19 @@ private:
   HandlerCollection const& _handler_collection;
 
   std::thread _backend_worker_thread; /** the backend thread that is writing the log to the handlers */
+  uint32_t _backend_worker_thread_id; /** cached backend worker thread id */
 
   std::unique_ptr<RdtscClock> _rdtsc_clock{nullptr}; /** rdtsc clock if enabled **/
-  backend_worker_error_handler_t _error_handler;     /** error handler for the backend thread */
 
   std::chrono::nanoseconds _backend_thread_sleep_duration; /** backend_thread_sleep_duration from config **/
   std::once_flag _start_init_once_flag; /** flag to start the thread only once, in case start() is called multiple times */
   bool _has_unflushed_messages{false}; /** There are messages that are buffered by the OS, but not yet flushed */
   std::atomic<bool> _is_running{false}; /** The spawned backend thread status */
   std::priority_queue<TransitLogRecord, std::vector<TransitLogRecord>, std::greater<>> _transit_log_records;
+
+#if !defined(QUILL_NO_EXCEPTIONS)
+  backend_worker_error_handler_t _error_handler; /** error handler for the backend thread */
+#endif
 };
 
 /***/
@@ -176,9 +189,6 @@ void BackendWorker::run()
 {
   // protect init to be called only once
   std::call_once(_start_init_once_flag, [this]() {
-    // Set the backend worker thread status
-    _is_running.store(true, std::memory_order_relaxed);
-
     // We store the configuration here on our local variable since the config flag is not atomic
     // and we don't want it to change after we have started - This is just for safety and to
     // enforce the user to configure a variable before the thread has started
@@ -208,8 +218,14 @@ void BackendWorker::run()
       _rdtsc_clock = std::make_unique<RdtscClock>(std::chrono::milliseconds{QUILL_RDTSC_RESYNC_INTERVAL});
 #endif
 
+      // Cache this thread's id
+      _backend_worker_thread_id = get_thread_id();
+
+      // All okay, set the backend worker thread running flag
+      _is_running.store(true, std::memory_order_seq_cst);
+
       // Running
-      while (QUILL_LIKELY(is_running()))
+      while (QUILL_LIKELY(_is_running.load(std::memory_order_relaxed)))
       {
         // main loop
         QUILL_TRY { _main_loop(); }
@@ -235,6 +251,12 @@ void BackendWorker::run()
 
     // Move the worker ownership to our class
     _backend_worker_thread.swap(worker);
+
+    while (!_is_running.load(std::memory_order_seq_cst))
+    {
+      // wait for the thread to start
+      std::this_thread::sleep_for(std::chrono::microseconds{100});
+    }
   });
 }
 

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "quill/TweakMe.h"
+
 #include "quill/detail/BackendWorker.h"       // for backend_worker_error_h...
 #include "quill/detail/LogMacros.h"           // for filename_t
 #include "quill/detail/LogManager.h"          // for LogManager
@@ -32,25 +34,9 @@ class Logger;
 QUILL_ATTRIBUTE_COLD void preallocate();
 
 /**
- * The background thread in very rare occasion might thrown an exception which can not be caught in the
- * user threads. In that case the backend worker thread will call this callback instead.
- *
- * Set up a custom error handler to be used if the backend thread has any error.
- *
- * If no error handler is set, the default one will print to std::cerr.
- *
- * @note Not used when QUILL_NO_EXCEPTIONS is enabled.
- *
- * @note Must be called before quill::start();
- *
- * @param backend_worker_error_handler an error handler callback e.g [](std::string const& s) { std::cerr << s << std::endl; }
- *
- * @throws exception if it is called after the thread has started
- */
-QUILL_ATTRIBUTE_COLD void set_backend_worker_error_handler(backend_worker_error_handler_t backend_worker_error_handler);
-
-/**
- * Starts the backend thread to write the logs to the handlers
+ * Starts the backend thread to write the logs to the handlers.
+ * This function is protected with a std::call_once flag, it can only be called once.
+ * Blocks the caller thread until the backend worker thread starts spinning.
  * @throws When the backend thread fails to start
  */
 QUILL_ATTRIBUTE_COLD inline void start()
@@ -209,12 +195,35 @@ QUILL_ATTRIBUTE_COLD void set_default_logger_handler(std::initializer_list<Handl
 /**
  * Blocks the caller thread until all log messages up to the current timestamp are flushed
  *
- * The backend thread will call write on all handlers for all loggers up to the point (timestamp) that
- * this function was called.
+ * The backend thread will call write on all handlers for all loggers up to the point (timestamp)
+ * that this function was called.
  *
  * @note This function will not do anything if called while the backend worker is not running
  */
 void flush();
+
+#if !defined(QUILL_NO_EXCEPTIONS)
+/**
+ * The background thread in very rare occasion might thrown an exception which can not be caught in the
+ * user threads. In that case the backend worker thread will call this callback instead.
+ *
+ * Set up a custom error handler to be used if the backend thread has any error.
+ *
+ * If no error handler is set, the default one will print to std::cerr.
+ *
+ * @note Not used when QUILL_NO_EXCEPTIONS is enabled.
+ *
+ * @note Must be called before quill::start();
+ *
+ * @param backend_worker_error_handler an error handler callback e.g [](std::string const& s) { std::cerr << s << std::endl; }
+ *
+ * @warning backend_worker_error_handler will be executed by the backend worker thread.
+ *
+ * @throws exception if it is called after the thread has started
+ */
+
+QUILL_ATTRIBUTE_COLD void set_backend_worker_error_handler(backend_worker_error_handler_t backend_worker_error_handler);
+#endif
 
 /** Runtime logger configuration options **/
 namespace config
