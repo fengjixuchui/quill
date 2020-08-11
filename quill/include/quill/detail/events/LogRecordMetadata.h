@@ -17,7 +17,7 @@ namespace detail
 
 /**
  * Captures and stores information about a logging event in compile time
- * This information is later passed to the LogRecord runtime class
+ * This information is later passed to the LogRecordEvent runtime class
  */
 class LogRecordMetadata
 {
@@ -100,9 +100,9 @@ private:
 
   QUILL_NODISCARD static constexpr char const* _log_level_to_string(LogLevel log_level)
   {
-    constexpr std::array<char const*, 9> log_levels_strings = {{"TRACE_L3", "TRACE_L2", "TRACE_L1",
-                                                                "DEBUG   ", "INFO    ", "WARNING ",
-                                                                "ERROR   ", "CRITICAL", "NONE"}};
+    constexpr std::array<char const*, 10> log_levels_strings = {
+      {"TRACE_L3 ", "TRACE_L2 ", "TRACE_L1 ", "DEBUG    ", "INFO     ", "WARNING  ", "ERROR    ",
+       "CRITICAL ", "BACKTRACE", "NONE"}};
 
     using log_lvl_t = std::underlying_type<LogLevel>::type;
     return log_levels_strings[static_cast<log_lvl_t>(log_level)];

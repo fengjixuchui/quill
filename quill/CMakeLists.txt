@@ -24,11 +24,13 @@ set(HEADER_FILES
         include/quill/detail/misc/Utilities.h
         include/quill/detail/misc/TypeTraits.h
         include/quill/detail/misc/TypeTraitsCopyable.h
-        include/quill/detail/record/CommandRecord.h
-        include/quill/detail/record/LogRecord.h
-        include/quill/detail/record/RecordBase.h
-        include/quill/detail/record/LogRecordMetadata.h
+        include/quill/detail/events/BacktraceEvent.h
+        include/quill/detail/events/FlushEvent.h
+        include/quill/detail/events/LogRecordEvent.h
+        include/quill/detail/events/BaseEvent.h
+        include/quill/detail/events/LogRecordMetadata.h
         include/quill/detail/BackendWorker.h
+        include/quill/detail/BacktraceLogRecordStorage.h
         include/quill/detail/BoundedSPSCQueue.h
         include/quill/detail/Config.h
         include/quill/detail/HandlerCollection.h
@@ -41,11 +43,11 @@ set(HEADER_FILES
         include/quill/detail/ThreadContextCollection.h
         include/quill/detail/TimestampFormatter.h
         include/quill/detail/UnboundedSPSCQueue.h
-        include/quill/handlers/DailyFileHandler.h
         include/quill/handlers/FileHandler.h
         include/quill/handlers/Handler.h
         include/quill/handlers/RotatingFileHandler.h
         include/quill/handlers/StreamHandler.h
+        include/quill/handlers/TimeRotatingFileHandler.h
         include/quill/Fmt.h
         include/quill/Logger.h
         include/quill/LogLevel.h
@@ -66,16 +68,17 @@ set(SOURCE_FILES
         src/detail/misc/Spinlock.cpp
         src/detail/misc/FileUtilities.cpp
         src/detail/BackendWorker.cpp
+        src/detail/BacktraceLogRecordStorage.cpp
         src/detail/Config.cpp
         src/detail/HandlerCollection.cpp
         src/detail/LoggerCollection.cpp
         src/detail/LogManagerSingleton.cpp
         src/detail/ThreadContextCollection.cpp
         src/detail/TimestampFormatter.cpp
-        src/handlers/DailyFileHandler.cpp
         src/handlers/FileHandler.cpp
         src/handlers/RotatingFileHandler.cpp
         src/handlers/StreamHandler.cpp
+        src/handlers/TimeRotatingFileHandler.cpp
         src/LogLevel.cpp
         src/PatternFormatter.cpp
         src/Quill.cpp

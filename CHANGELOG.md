@@ -1,3 +1,5 @@
+-  [v1.4.0](#v1.4.0)
+-  [v1.3.3](#v1.3.3)
 -  [v1.3.2](#v1.3.2)
 -  [v1.3.1](#v1.3.1)
 -  [v1.3.0](#v1.3.0)
@@ -8,9 +10,21 @@
 -  [v1.1.0](#v1.1.0)
 -  [v1.0.0](#v1.0.0)
 
+## v1.4.0
+- RotatingFileHandler improvements and minor change in API. See [RotatingFileHandler](https://github.com/odygrd/quill/wiki/2.-Handlers#rotatingfilehandler)
+- DailyFileHandler is removed and replaced by TimeRotatingFileHandler. See [TimeRotatingFileHandler](https://github.com/odygrd/quill/wiki/2.-Handlers#timerotatingfilehandler)
+- Added backtrace logging. Log messages can be stored in a buffer and flushed later on demand. See [Backtrace Logging](https://github.com/odygrd/quill/wiki/6.-Backtrace-Logging)
+- Added bundled `doctest` `2.4.0`
+- Migrated all tests from `gtest` to `doctest`.
+
+## v1.3.3
+- Upgraded bundled libfmt to `7.0.2`
+- Fixed compile error with libfmt versions > `7.0.0`
+
 ## v1.3.2
 -  Add a CMake option `QUILL_USE_BOUNDED_QUEUE` for bounded queue.
 -  Fixed a clang 10 warning
+-  Fixed MinGw build
 
 ## v1.3.1
 -  Minor CMake fixes when `QUILL_FMT_EXTERNAL` option is used.

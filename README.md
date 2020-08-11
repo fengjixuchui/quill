@@ -70,6 +70,7 @@ The main goals of the library are:
  -  Log statements of different levels can be completely stripped out at compile time.
  -  Highly configurable log pattern. The log statements can be formatted to any format based on a user specified pattern.
  -  Log statements in timestamp order even when produced by different threads.
+ -  Backtrace logging. Store log messages in a ring buffer and display later when a higher severity log statement occurs or on demand.
  -  Guaranteed non-blocking or non-guaranteed dropping logging. In guaranteed logging more memory is allocated but the caller never get's blocked and the log messages are never dropped. In non-guaranteed mode there is no heap allocation but the log messages are dropped instead.
  -  Support for wide character logging and wide character filenames (Windows only)
  -  Various log targets (Handlers)
@@ -139,6 +140,7 @@ However :
 
 ## Supported Platforms And Compilers
 Quill requires a C++14 compiler. Minimum required versions of supported compilers are shown in the below table.
+Cygwin is not supported at the moment.
 
 | Compiler  | Notes            |
 |-----------|------------------|
@@ -280,3 +282,4 @@ Your use of the source code for these subcomponents is subject to the terms and 
 
    - ([MIT License](http://opensource.org/licenses/MIT)) {fmt} (https://github.com/fmtlib/fmt/blob/master/LICENSE.rst)
    - ([MIT License](http://opensource.org/licenses/MIT)) invoke.hpp (https://github.com/BlackMATov/invoke.hpp/blob/master/LICENSE.md)
+   - ([MIT License](http://opensource.org/licenses/MIT)) doctest (https://github.com/onqtam/doctest/blob/master/LICENSE.txt)

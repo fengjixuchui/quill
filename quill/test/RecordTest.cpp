@@ -1,9 +1,12 @@
+#include "doctest/doctest.h"
+
 #include "quill/detail/HandlerCollection.h"
+#include "quill/detail/events/FlushEvent.h"
+#include "quill/detail/events/LogRecordEvent.h"
 #include "quill/detail/misc/Macros.h"
-#include "quill/detail/record/CommandRecord.h"
-#include "quill/detail/record/LogRecord.h"
-#include <gtest/gtest.h>
 #include <string>
+
+TEST_SUITE_BEGIN("Record");
 
 using namespace quill::detail;
 using namespace quill;
@@ -13,14 +16,16 @@ struct mock_log_record_info
   constexpr quill::detail::LogRecordMetadata operator()() { return LogRecordMetadata{}; }
 };
 
-TEST(Record, construct)
+constexpr bool is_backtrace_log_record{false};
+
+TEST_CASE("construct")
 {
   HandlerCollection hc;
 
   LoggerDetails logger_details{"default", hc.stdout_streamhandler()};
   {
     // test with char const the tuple get's promoted
-    using record_t = LogRecord<mock_log_record_info, int, double, char const*>;
+    using record_t = LogRecordEvent<is_backtrace_log_record, mock_log_record_info, int, double, char const*>;
     static_assert(std::is_same<record_t::PromotedTupleT, std::tuple<int, double, std::string>>::value,
                   "tuple is not promoted");
 
@@ -35,7 +40,7 @@ TEST(Record, construct)
   {
     // test with char*
     char test_char[] = "test";
-    using record_t = LogRecord<mock_log_record_info, int, double, char*>;
+    using record_t = LogRecordEvent<is_backtrace_log_record, mock_log_record_info, int, double, char*>;
     static_assert(std::is_same<record_t::PromotedTupleT, std::tuple<int, double, std::string>>::value,
                   "tuple is not promoted");
 
@@ -47,3 +52,5 @@ TEST(Record, construct)
                   "tuple is not promoted");
   }
 }
+
+TEST_SUITE_END();

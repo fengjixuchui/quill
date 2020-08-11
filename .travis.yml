@@ -8,7 +8,7 @@ matrix:
     - name: 'Linux Gcc C++17 Debug'
       os: linux
       compiler: gcc
-      env: GCC_VERSION=9 BUILD=Debug STANDARD=17 CODE_COVERAGE=OFF VALGRIND=OFF ASAN=OFF TSAN=OFF SONAR=ON
+      env: GCC_VERSION=9 BUILD=Debug STANDARD=17 CODE_COVERAGE=OFF VALGRIND=OFF ASAN=OFF TSAN=OFF SONAR=OFF
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
@@ -98,16 +98,6 @@ before_install:
   - cmake --version
 
 install:
-  # Get latest gtest
-  - sudo wget https://github.com/google/googletest/archive/release-1.10.0.tar.gz
-  - sudo tar xf release-1.10.0.tar.gz
-  - cd googletest-release-1.10.0
-  - sudo cmake -DCMAKE_BUILD_TYPE=Release .
-  - sudo cmake --build .
-  - ls -la
-  - sudo cp -a ./googletest/include/gtest /usr/local/include
-  - sudo cp -a ./lib/* /usr/local/lib
-
   # Install codecov
   - if [[ "$CODE_COVERAGE" == "ON" ]]; then sudo -H pip install --upgrade pip; sudo -H pip install codecov --ignore-installed; fi
 
@@ -145,6 +135,7 @@ after_success:
 branches:
   only:
     - master
+    - /.*/
 
 notifications:
   email: false
