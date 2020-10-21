@@ -1,3 +1,5 @@
+-  [v1.5.0](#v1.5.0)
+-  [v1.4.1](#v1.4.1)
 -  [v1.4.0](#v1.4.0)
 -  [v1.3.3](#v1.3.3)
 -  [v1.3.2](#v1.3.2)
@@ -10,12 +12,33 @@
 -  [v1.1.0](#v1.1.0)
 -  [v1.0.0](#v1.0.0)
 
+## v1.5.0
+- Added `Filters`. The filter class can be used for filtering log records. Filters can be added to handler instances. See [example_filters.cpp](https://github.com/odygrd/quill/blob/master/examples/example_filters.cpp)
+- It is now possible to set the log level severity on the handler objects. See [example_filters.cpp](https://github.com/odygrd/quill/blob/master/examples/example_handler_log_levels.cpp) ([#49](https://github.com/odygrd/quill/issues/49))
+- Timestamp formatting optimisation for the backend worker thread.
+- Free list allocator optimisation for the backend worker thread.
+- Fixed PatternFormatter ignoring a portion of the pattern was ignored, when no format specifiers were present. ([#56](https://github.com/odygrd/quill/issues/56))
+- PatternFormatter enhancement. It is now possible to pass [{fmt} string syntax](https://fmt.dev/latest/syntax.html) to `QUILL_STRING`. The default PatternFormatter string has been changed to: `"%(ascii_time) [%(thread)] %(fileline:<28) LOG_%(level_name) %(logger_name:<12) - %(message)"`. This results to the following log being properly aligned despite the different lengths of each filename and logger name.
+```
+22:31:07.995438465 [2666041] file1.h:11                   LOG_INFO      logger1      - Log from file.
+22:31:07.995445699 [2666041] long_file2.h:11              LOG_INFO      logger_fl2   - Log from other file.
+22:31:07.995457144 [2666041] a_longer_file_3.hpp:11       LOG_INFO      logger_fl2_l - Log from other file.
+22:31:07.995462471 [2666041] example_trivial.cpp:30       LOG_TRACE_L3  root         - This is a log trace l3 example 1
+```
+
+## v1.4.1
+- Do not force `quill` to always build as `static` library in cmake.
+- Minor fix when `quill` is compiled with no exceptions.
+- Add the option to disable the non prefixed macro definitions if `QUILL_DISABLE_NON_PREFIXED_MACROS` is defined. ([#40](https://github.com/odygrd/quill/issues/40)) 
+
 ## v1.4.0
+- Added support for printing colour codes in the terminal. See [ConsoleHandler](https://github.com/odygrd/quill/wiki/2.-Handlers#consolehandler)
 - RotatingFileHandler improvements and minor change in API. See [RotatingFileHandler](https://github.com/odygrd/quill/wiki/2.-Handlers#rotatingfilehandler)
 - DailyFileHandler is removed and replaced by TimeRotatingFileHandler. See [TimeRotatingFileHandler](https://github.com/odygrd/quill/wiki/2.-Handlers#timerotatingfilehandler)
 - Added backtrace logging. Log messages can be stored in a buffer and flushed later on demand. See [Backtrace Logging](https://github.com/odygrd/quill/wiki/6.-Backtrace-Logging)
 - Added bundled `doctest` `2.4.0`
 - Migrated all tests from `gtest` to `doctest`.
+- Upgraded bundled libfmt to `7.0.3`
 
 ## v1.3.3
 - Upgraded bundled libfmt to `7.0.2`

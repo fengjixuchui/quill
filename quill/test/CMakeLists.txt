@@ -13,6 +13,7 @@ set(SOURCE_FILES
         BoundedSPSCQueueTest.cpp
         ConfigTest.cpp
         FileUtilitiesTest.cpp
+        FreeListAllocatorTest.cpp
         HandlerCollectionTest.cpp
         LoggerCollectionTest.cpp
         LoggerTest.cpp
@@ -22,9 +23,12 @@ set(SOURCE_FILES
         PatternFormatterTest.cpp
         QuillLogTest.cpp
         RecordTest.cpp
+        StringFromTimeTest.cpp
         ThreadContextCollectionTest.cpp
+        TimeRotatingFileHandlerTest.cpp
         TimestampFormatterTest.cpp
         TypeTraitsCopyableTest.cpp
+        UtilitiesTest.cpp
         UtilityTest.cpp
         )
 
@@ -60,6 +64,6 @@ set_property(TARGET ${TEST_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build/test)
 
 # Add this target to the post build unit tests
-add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} --duration=true)
 
 include(../cmake/CodeCoverage.cmake)

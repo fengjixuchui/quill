@@ -15,12 +15,14 @@ set(HEADER_FILES
         include/quill/detail/misc/Attributes.h
         include/quill/detail/misc/Common.h
         include/quill/detail/misc/FileUtilities.h
+        include/quill/detail/misc/FreeListAllocator.h
         include/quill/detail/misc/Macros.h
         include/quill/detail/misc/Os.h
         include/quill/detail/misc/Rdtsc.h
         include/quill/detail/misc/RdtscClock.h
         include/quill/detail/misc/RecursiveSpinlock.h
         include/quill/detail/misc/Spinlock.h
+        include/quill/detail/misc/StringFromTime.h
         include/quill/detail/misc/Utilities.h
         include/quill/detail/misc/TypeTraits.h
         include/quill/detail/misc/TypeTraitsCopyable.h
@@ -43,6 +45,8 @@ set(HEADER_FILES
         include/quill/detail/ThreadContextCollection.h
         include/quill/detail/TimestampFormatter.h
         include/quill/detail/UnboundedSPSCQueue.h
+        include/quill/filters/FilterBase.h
+        include/quill/handlers/ConsoleHandler.h
         include/quill/handlers/FileHandler.h
         include/quill/handlers/Handler.h
         include/quill/handlers/RotatingFileHandler.h
@@ -66,7 +70,9 @@ set(SOURCE_FILES
         src/detail/misc/RdtscClock.cpp
         src/detail/misc/RecursiveSpinlock.cpp
         src/detail/misc/Spinlock.cpp
+        src/detail/misc/StringFromTime.cpp
         src/detail/misc/FileUtilities.cpp
+        src/detail/misc/FreeListAllocator.cpp
         src/detail/BackendWorker.cpp
         src/detail/BacktraceLogRecordStorage.cpp
         src/detail/Config.cpp
@@ -75,7 +81,9 @@ set(SOURCE_FILES
         src/detail/LogManagerSingleton.cpp
         src/detail/ThreadContextCollection.cpp
         src/detail/TimestampFormatter.cpp
+        src/handlers/ConsoleHandler.cpp
         src/handlers/FileHandler.cpp
+        src/handlers/Handler.cpp
         src/handlers/RotatingFileHandler.cpp
         src/handlers/StreamHandler.cpp
         src/handlers/TimeRotatingFileHandler.cpp
@@ -106,8 +114,13 @@ if (NOT QUILL_FMT_EXTERNAL)
             src/bundled/fmt/os.cc)
 endif ()
 
+if (BUILD_SHARED_LIBS)
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif ()
+
 # Add as a library
-add_library(${TARGET_NAME} STATIC "")
+add_library(${TARGET_NAME} "")
 
 add_library(${TARGET_NAME}::${TARGET_NAME} ALIAS ${TARGET_NAME})
 

@@ -217,40 +217,40 @@ TEST_CASE("log_using_rotating_file_handler")
   // Read file and check
   std::vector<std::string> const file_contents =
     quill::testing::file_contents(quill::detail::s2ws(base_filename));
-  REQUIRE_EQ(file_contents.size(), 2);
+  REQUIRE_EQ(file_contents.size(), 4);
 
   std::vector<std::string> const file_contents_1 =
     quill::testing::file_contents(quill::detail::s2ws(rotated_filename_1));
-  REQUIRE_EQ(file_contents_1.size(), 9);
+  REQUIRE_EQ(file_contents_1.size(), 8);
 
   std::vector<std::string> const file_contents_2 =
     quill::testing::file_contents(quill::detail::s2ws(rotated_filename_2));
-  REQUIRE_EQ(file_contents_2.size(), 9);
+  REQUIRE_EQ(file_contents_2.size(), 8);
 
   std::vector<std::string> const file_contents_3 =
     quill::testing::file_contents(quill::detail::s2ws(base_filename_2));
-  REQUIRE_EQ(file_contents_3.size(), 11);
+  REQUIRE_EQ(file_contents_3.size(), 12);
 
   std::vector<std::string> const file_contents_4 =
     quill::testing::file_contents(quill::detail::s2ws(rotated_filename_2nd_1));
-  REQUIRE_EQ(file_contents_4.size(), 9);
+  REQUIRE_EQ(file_contents_4.size(), 8);
 #else
   // Read file and check
   std::vector<std::string> const file_contents = quill::testing::file_contents(base_filename);
-  REQUIRE_EQ(file_contents.size(), 2);
+  REQUIRE_EQ(file_contents.size(), 4);
 
   std::vector<std::string> const file_contents_1 = quill::testing::file_contents(rotated_filename_1);
-  REQUIRE_EQ(file_contents_1.size(), 9);
+  REQUIRE_EQ(file_contents_1.size(), 8);
 
   std::vector<std::string> const file_contents_2 = quill::testing::file_contents(rotated_filename_2);
-  REQUIRE_EQ(file_contents_2.size(), 9);
+  REQUIRE_EQ(file_contents_2.size(), 8);
 
   // File from 2nd logger
   std::vector<std::string> const file_contents_3 = quill::testing::file_contents(base_filename_2);
-  REQUIRE_EQ(file_contents_3.size(), 11);
+  REQUIRE_EQ(file_contents_3.size(), 12);
 
   std::vector<std::string> const file_contents_4 = quill::testing::file_contents(rotated_filename_2nd_1);
-  REQUIRE_EQ(file_contents_4.size(), 9);
+  REQUIRE_EQ(file_contents_4.size(), 8);
 #endif
 
 #if defined(_WIN32)
@@ -363,7 +363,7 @@ TEST_CASE("log_using_multiple_stdout_formats")
     if (i % 2 == 0)
     {
       std::string expected_string =
-        "QuillLogTest.cpp:340 LOG_INFO      root - Hello log num " + std::to_string(i);
+        "QuillLogTest.cpp:340         LOG_INFO      root         - Hello log num " + std::to_string(i);
 
       if (!quill::testing::file_contains(result_arr, expected_string))
       {
@@ -439,6 +439,7 @@ TEST_CASE("log_to_multiple_handlers_from_same_logger")
              "log_multi_handlers - Hello log multiple handlers (_DOCTEST_ANON_FUNC_20)\n");
 }
 
+#ifndef QUILL_NO_EXCEPTIONS
 /***/
 TEST_CASE("invalid_handlers")
 {
@@ -457,12 +458,18 @@ TEST_CASE("invalid_handlers")
   REQUIRE_THROWS_AS(auto x3 = quill::stderr_handler("invalid_handlers.log"), quill::QuillError);
   REQUIRE_THROWS_AS(auto x4 = quill::stdout_handler("invalid_handlers.log"), quill::QuillError);
 
+  // try to use console colours with stdout handler as name
+  quill::ConsoleColours terminal_colours;
+  terminal_colours.set_default_colours();
+  REQUIRE_THROWS_AS(auto x5 = quill::stdout_handler("stdout", terminal_colours), quill::QuillError);
+
   // remove file
-#if defined(_WIN32)
+  #if defined(_WIN32)
   quill::detail::file_utilities::remove(quill::detail::s2ws(filename));
-#else
+  #else
   quill::detail::file_utilities::remove(filename);
-#endif
+  #endif
 }
+#endif
 
 TEST_SUITE_END();

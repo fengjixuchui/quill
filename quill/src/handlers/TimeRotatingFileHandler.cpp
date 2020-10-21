@@ -27,7 +27,7 @@ TimeRotatingFileHandler::TimeRotatingFileHandler(filename_t const& base_filename
   if ((_when != std::string{"M"}) && _when != std::string{"H"} && _when != std::string{"daily"})
   {
     QUILL_THROW(
-      QuillError{"Invalid when value for TimeRotatingFileHandler. Valid values are 'S', 'M', 'H' "
+      QuillError{"Invalid when value for TimeRotatingFileHandler. Valid values are 'M', 'H' "
                  "or 'daily'"});
   }
 
@@ -47,7 +47,18 @@ TimeRotatingFileHandler::TimeRotatingFileHandler(filename_t const& base_filename
 
   if (tokens.size() != 2)
   {
-    QUILL_THROW(QuillError{"Invalid at_time value."});
+    QUILL_THROW(QuillError{"Invalid at_time value format. Needs to be in format `hh:mm`."});
+  }
+  else
+  {
+    // check token string has a size of 2. eg. "05"
+    for (auto const& parsed_token : tokens)
+    {
+      if (parsed_token.size() != 2)
+      {
+        QUILL_THROW(QuillError{"Invalid at_time value format. Needs to be in format `hh:mm`."});
+      }
+    }
   }
 
   at_time_hours = std::chrono::hours(std::stoi(tokens[0]));
@@ -69,7 +80,7 @@ TimeRotatingFileHandler::TimeRotatingFileHandler(filename_t const& base_filename
 
 /***/
 void TimeRotatingFileHandler::write(fmt::memory_buffer const& formatted_log_record,
-                                    std::chrono::nanoseconds log_record_timestamp)
+                                    std::chrono::nanoseconds log_record_timestamp, LogLevel log_message_severity)
 {
   bool const should_rotate = (log_record_timestamp >= _next_rotation_time.time_since_epoch());
 
@@ -117,7 +128,7 @@ void TimeRotatingFileHandler::write(fmt::memory_buffer const& formatted_log_reco
   }
 
   // write to file
-  StreamHandler::write(formatted_log_record, log_record_timestamp);
+  StreamHandler::write(formatted_log_record, log_record_timestamp, log_message_severity);
 }
 
 /***/
